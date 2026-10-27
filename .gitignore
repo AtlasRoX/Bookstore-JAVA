@@ -1,0 +1,15 @@
+# Compiled Java class files
+*.class
+
+# Log and temporary files
+*.tmp
+*.dat
+hs_err_pid*
+replay_pid*
+
+# IDE & Editor folders
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,5 @@
+# PRODUCTS
+BOOK|B001|Clean Code|650.00|10|Robert C. Martin|978-0132350884
+BOOK|B002|Effective Java|850.00|8|Joshua Bloch|978-0134685991
+STAT|S001|Gel Pen Pack (Blue)|120.00|25|Pilot
+# SALES
