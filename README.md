@@ -4,6 +4,8 @@ A Java console application for a small bookstore, with a colorful full-screen te
 
 **Project report (PDF, 13 pages):** [docs/Bookstore-Project-Report.pdf](docs/Bookstore-Project-Report.pdf) — why this project, features, how it works (with diagrams), screenshots of every screen, all 11 OOP concepts with their code, limitations and conclusion.
 
+**Presentation (Google Slides, 21 slides):** [View the presentation](https://docs.google.com/presentation/d/1if5fkjqZGf6V8-vpenAkUtjIuvOIZxUUxsQWVOg3HL8/edit?usp=sharing) — why this project, the features on real screens, how it works, all 11 OOP concepts in the code, tools and next steps.
+
 ![Products screen](docs/screenshots/01-products.png)
 
 ---
