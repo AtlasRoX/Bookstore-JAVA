@@ -3,9 +3,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-// Everything the user sees or types goes through this class.
-// Texts like "\033[...m" are ANSI color codes that the terminal shows as colors:
-// "38;2;R;G;B" sets the text color and "48;2;R;G;B" sets the background color.
+// Everything the user sees or types; texts like "\033[...m" are ANSI color codes.
 public class BookstoreUI {
     private static final String BODY = "\033[38;2;229;237;255;48;2;12;22;66m";     // light text on navy
     private static final String DIM = "\033[38;2;140;189;225;48;2;12;22;66m";      // soft blue on navy
@@ -16,9 +14,10 @@ public class BookstoreUI {
     private static final String GREEN = "\033[38;2;13;43;31;48;2;132;210;164m";    // dark on green
     private static final String RED = "\033[38;2;255;239;239;48;2;137;35;50m";     // white on red
     private static final String RESET = "\033[0m";                                 // terminal's own colors
+    // Menu tab names; the position is the key (0 = Exit).
     private static final String[] MENU = {"Exit", "Products", "Search", "Add product", "Restock",
             "Change price", "Sell", "Refund", "Sales", "Report"};
-    private Scanner in = new Scanner(System.in);
+    private Scanner in = new Scanner(System.in); // reads what the user types
 
     public BookstoreUI() {
         System.out.print("\033]0;Bookstore\007"); // window title
@@ -63,14 +62,17 @@ public class BookstoreUI {
         return askText("Choose");
     }
 
+    // Green bar for a success message.
     public void message(String text) {
         line(GREEN, String.format(" %-78s", text));
     }
 
+    // Red bar for a problem.
     public void error(String text) {
         line(RED, String.format(" %-78s", text));
     }
 
+    // Normal colors, clear screen, goodbye text.
     public void goodbye() {
         System.out.print(RESET + "\033[2J\033[H");
         System.out.println("Goodbye! Everything is saved.");
@@ -124,6 +126,7 @@ public class BookstoreUI {
         }
     }
 
+    // True when the answer starts with y (y or yes).
     public boolean askYes(String question) {
         return askLetter(question + " (y/n)", "YN") == 'Y';
     }
@@ -153,6 +156,7 @@ public class BookstoreUI {
         line(WHITE, String.format("   %-44s ", fit(text, 44)));
     }
 
+    // The white product card: type, details, category, price and stock.
     public void showProduct(Product p) {
         card(p.getType() + ": " + p.getTitle() + "  (" + p.getId() + ")");
         card(p.getDetails());
@@ -161,6 +165,7 @@ public class BookstoreUI {
         line(BODY, "");
     }
 
+    // The paper-style receipt.
     public void showReceipt(Sale s) {
         card("");
         card("RECEIPT #" + s.id + "     " + s.date + "     " + (s.refunded ? "REFUNDED" : "PAID"));
@@ -187,6 +192,7 @@ public class BookstoreUI {
         line(BODY, "");
     }
 
+    // Totals for sales (refunds left out) and for stock.
     public void showReport(Bookstore store) {
         double income = 0, stockValue = 0;
         int unitsSold = 0, unitsInStock = 0, lowStock = 0;

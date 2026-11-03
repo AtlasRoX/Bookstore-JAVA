@@ -1,13 +1,6 @@
 import java.io.Serializable;
 
-// DIAMOND PROBLEM: Trackable and Promotable both extend Item, and both give their own
-// default getCategory(). Product implements both, so Java forces Product to choose.
-//
-//                Item
-//              /      \
-//       Trackable    Promotable
-//              \      /
-//              Product
+// DIAMOND PROBLEM: Trackable and Promotable both extend Item and both change getCategory().
 interface Item {
     default String getCategory() { return "Item"; }
 }
@@ -41,6 +34,7 @@ public abstract class Product implements Trackable, Promotable, Serializable {
     private double price;
     private int stock;
 
+    // Constructor: stores the values and counts the new product.
     public Product(String id, String title, double price, int stock) {
         this.id = id; // THIS: this.id is the object's field, id is the parameter
         this.title = title;
@@ -115,6 +109,7 @@ class Stationery extends Product {
     private static final long serialVersionUID = 1L;
     private String brand;
 
+    // Constructor: the Product part is filled first by super(...).
     public Stationery(String id, String title, double price, int stock, String brand) {
         super(id, title, price, stock); // SUPER: runs the Product constructor first
         this.brand = brand;
@@ -122,6 +117,7 @@ class Stationery extends Product {
 
     public String getBrand() { return brand; } // only Stationery has a brand
 
+    // METHOD OVERRIDING: Stationery's own versions.
     @Override
     public String getType() { return "STATIONERY"; }
 

@@ -4,11 +4,12 @@ import java.util.ArrayList;
 
 // The bookstore rules and the data file. This class never prints anything.
 public class Bookstore implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private static final String FILE = "bookstore.dat";
-    private ArrayList<Product> products = new ArrayList<>();
-    private ArrayList<Sale> sales = new ArrayList<>();
+    private static final long serialVersionUID = 1L; // keeps saved files readable after code edits
+    private static final String FILE = "bookstore.dat"; // where everything is saved
+    private ArrayList<Product> products = new ArrayList<>(); // all products
+    private ArrayList<Sale> sales = new ArrayList<>(); // all receipts
 
+    // Getters for the two lists.
     public ArrayList<Product> getProducts() { return products; }
     public ArrayList<Sale> getSales() { return sales; }
 
@@ -27,6 +28,7 @@ public class Bookstore implements Serializable {
         return p;
     }
 
+    // Products whose ID, title or details contain the text (any case).
     public ArrayList<Product> search(String text) {
         ArrayList<Product> found = new ArrayList<>();
         for (Product p : products) {
@@ -36,6 +38,7 @@ public class Bookstore implements Serializable {
         return found;
     }
 
+    // Adds a new product (its ID must be new) and saves.
     public void add(Product p) {
         if (find(p.getId()) != null) throw new RuntimeException("ID " + p.getId() + " is already used.");
         products.add(p);
@@ -47,12 +50,14 @@ public class Bookstore implements Serializable {
         restock(get(id), quantity);
     }
 
+    // Adds units to the stock and saves.
     public void restock(Product p, int quantity) {
         if (quantity < 1) throw new RuntimeException("Quantity must be at least 1.");
         p.setStock(p.getStock() + quantity);
         save();
     }
 
+    // Sets a new unit price and saves.
     public void changePrice(Product p, double price) {
         p.setPrice(price);
         save();
@@ -67,6 +72,7 @@ public class Bookstore implements Serializable {
         return Math.round(total * 100) / 100.0;
     }
 
+    // Sells: checks the cash, lowers the stock, stores the receipt and saves.
     public Sale sell(Product p, int quantity, boolean member, double paid) {
         double total = total(p, quantity, member);
         if (paid < total) throw new RuntimeException("Cash is less than the total. Sale cancelled.");
@@ -77,11 +83,13 @@ public class Bookstore implements Serializable {
         return sale;
     }
 
+    // Returns receipt number N (receipts start at 1).
     public Sale getSale(int number) {
         if (number < 1 || number > sales.size()) throw new RuntimeException("No receipt #" + number + ".");
         return sales.get(number - 1);
     }
 
+    // Marks the receipt refunded and puts the units back in stock.
     public void refund(Sale sale) {
         if (sale.refunded) throw new RuntimeException("Receipt #" + sale.id + " was already refunded.");
         sale.refunded = true;
@@ -118,6 +126,7 @@ class Sale implements Serializable {
     double total, paid;
     boolean refunded;
 
+    // Copies the product's ID and title, so an old receipt never changes.
     Sale(int id, Product p, int quantity, double total, double paid) {
         this.id = id;
         this.date = LocalDate.now().toString();

@@ -2,9 +2,10 @@ import java.util.Locale;
 
 // Starts the program and runs the menu option the user picks.
 public class Main {
-    static BookstoreUI ui = new BookstoreUI();
-    static Bookstore store;
+    static BookstoreUI ui = new BookstoreUI(); // draws the screens and reads answers
+    static Bookstore store;                    // the shop's products and sales
 
+    // Loads the data, then repeats: show the menu, run the chosen task.
     public static void main(String[] args) {
         Locale.setDefault(Locale.US); // always show prices as 450.50 (with a dot) on every computer
         try {
@@ -53,6 +54,7 @@ public class Main {
         ui.message(text);
     }
 
+    // 2 Search: shows only the products that match.
     static void search() {
         String text = ui.askText("Search for (ID, title, author, brand or ISBN)");
         ui.newScreen(2);
@@ -60,6 +62,7 @@ public class Main {
         ui.message("Results for \"" + text + "\"");
     }
 
+    // 3 Add product: asks every detail, then saves a Book or a Stationery.
     static void addProduct() {
         char type = ui.askLetter("Type: B = book, S = stationery", "BS");
         String id = ui.askText("ID (short code, e.g. B1)");
@@ -89,6 +92,7 @@ public class Main {
         showResult(3, "Added " + product.getType() + " \"" + title + "\"" + extra + ".");
     }
 
+    // 4 Restock: adds units to a product.
     static void restock() {
         ui.showProducts(store.getProducts());
         Product p = askProduct();
@@ -97,6 +101,7 @@ public class Main {
         showResult(4, "Restocked \"" + p.getTitle() + "\". Stock is now " + p.getStock() + ".");
     }
 
+    // 5 Change price: sets a new unit price.
     static void changePrice() {
         ui.showProducts(store.getProducts());
         Product p = askProduct();
@@ -105,6 +110,7 @@ public class Main {
         showResult(5, String.format("Price of \"%s\" is now %.2f BDT.", p.getTitle(), p.getPrice()));
     }
 
+    // 6 Sell: quantity, member discount, cash, then the receipt.
     static void sell() {
         ui.showProducts(store.getProducts());
         Product p = askProduct();
@@ -123,6 +129,7 @@ public class Main {
         ui.message(String.format("Sale saved. Give back %.2f BDT change.", sale.paid - sale.total));
     }
 
+    // 7 Refund: refunds a whole receipt once and returns the stock.
     static void refund() {
         if (store.getSales().isEmpty()) throw new RuntimeException("No sales yet, so there is nothing to refund.");
         ui.showSales(store.getSales());
