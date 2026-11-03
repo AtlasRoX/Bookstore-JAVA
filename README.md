@@ -57,13 +57,15 @@ java Main
 
 ```
 Bookstore-JAVA/
-├── Product.java      Item, Trackable, Promotable (interfaces), abstract Product, Book, Stationery
-├── Bookstore.java    shop rules (add, restock, sell, refund, search), saving and loading; class Sale
-├── BookstoreUI.java  everything on screen: colors, menu tabs, tables, receipt, questions
-├── Main.java         start-up, menu loop, one method per task
-├── run.bat           compiles and opens the program in an 80 × 24 window
-└── docs/             project report (PDF) and screenshots
+├── Product.java      126 lines  Item, Trackable, Promotable (interfaces), abstract Product, Book, Stationery
+├── Bookstore.java    139 lines  shop rules (add, restock, sell, refund, search), saving and loading; class Sale
+├── BookstoreUI.java  222 lines  everything on screen: colors, menu tabs, tables, receipt, questions
+├── Main.java         148 lines  start-up, menu loop, one method per task
+├── run.bat            10 lines  compiles and opens the program in an 80 × 24 window
+└── docs/                        project report (PDF) and screenshots
 ```
+
+**Size:** 635 lines of Java in total — 491 lines of code, 71 one-line comments (plus 35 short comments at the end of a line) and 73 blank lines.
 
 **How the files work together:** `BookstoreUI` shows a screen and reads the answer → `Main` decides which task runs → `Bookstore` checks the rules, changes the data and saves it → `Product` / `Sale` are the data → `BookstoreUI` shows the result.
 
