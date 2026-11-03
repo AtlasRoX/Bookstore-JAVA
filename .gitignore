@@ -13,3 +13,7 @@ replay_pid*
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Personal study guide (kept local, not uploaded)
+docs/Bookstore-Code-Guide-Bangla.pdf
+
