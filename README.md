@@ -2,7 +2,7 @@
 
 A Java console application for a small bookstore, with a colorful full-screen terminal interface. The code is short (4 files) and uses simple syntax, and it demonstrates every core **Object-Oriented Programming (OOP)** concept from the course inside real features.
 
-**Project report (PDF, 13 pages):** [docs/Bookstore-Project-Report.pdf](docs/Bookstore-Project-Report.pdf) — why this project, features, how it works (with diagrams), screenshots of every screen, all 11 OOP concepts with their code, limitations and conclusion.
+**Project report (PDF, 18 pages):** [docs/Bookstore-Project-Report.pdf](docs/Bookstore-Project-Report.pdf) — Objective, Introduction, Methodology (tools, design diagrams, and all the important code with explanations, including the 11 OOP concepts), Discussion and Conclusion (screens of every feature, how each objective was met, problems solved, limitations), and References.
 
 **Presentation (Google Slides, 21 slides):** [View the presentation](https://docs.google.com/presentation/d/1if5fkjqZGf6V8-vpenAkUtjIuvOIZxUUxsQWVOg3HL8/edit?usp=sharing) — why this project, the features on real screens, how it works, all 11 OOP concepts in the code, tools and next steps.
 
