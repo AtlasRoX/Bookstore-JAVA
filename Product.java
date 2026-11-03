@@ -29,7 +29,7 @@ public abstract class Product implements Trackable, Promotable, Serializable {
 
     // STATIC variables belong to the class and are shared by every product.
     public static final String CURRENCY;
-    private static int createdCount = 0;
+    private static int createdCount = 0; // products created while the program runs (shown in the Report)
 
     // STATIC BLOCK: runs once, when Java first loads the Product class.
     static {
@@ -41,18 +41,12 @@ public abstract class Product implements Trackable, Promotable, Serializable {
     private double price;
     private int stock;
 
-    // CONSTRUCTOR OVERLOADING 1: all four values.
     public Product(String id, String title, double price, int stock) {
         this.id = id; // THIS: this.id is the object's field, id is the parameter
         this.title = title;
         this.price = price;
         this.stock = stock;
         createdCount++;
-    }
-
-    // CONSTRUCTOR OVERLOADING 2: no stock given. THIS(...) calls the constructor above.
-    public Product(String id, String title, double price) {
-        this(id, title, price, 0);
     }
 
     // STATIC METHOD: called on the class itself, e.g. Product.getCreatedCount()
@@ -73,14 +67,9 @@ public abstract class Product implements Trackable, Promotable, Serializable {
         if (stock >= 0) this.stock = stock;
     }
 
-    // METHOD OVERLOADING 1: discount on one item by percentage.
+    // Discount on one item, by percentage (used for the 5% member discount).
     public double calculateDiscount(double percentage) {
         return price * percentage / 100;
-    }
-
-    // METHOD OVERLOADING 2: same name, one more parameter: discount with a maximum limit.
-    public double calculateDiscount(double percentage, double maxDiscount) {
-        return Math.min(calculateDiscount(percentage), maxDiscount);
     }
 
     // DIAMOND PROBLEM SOLVED: we say exactly which parent versions to use.
@@ -99,10 +88,16 @@ class Book extends Product {
     private static final long serialVersionUID = 1L;
     private String author, isbn;
 
+    // CONSTRUCTOR OVERLOADING 1: a book with an ISBN.
     public Book(String id, String title, double price, int stock, String author, String isbn) {
         super(id, title, price, stock); // SUPER: runs the Product constructor first
         this.author = author;
         this.isbn = isbn;
+    }
+
+    // CONSTRUCTOR OVERLOADING 2: a book without an ISBN. THIS(...) calls the constructor above.
+    public Book(String id, String title, double price, int stock, String author) {
+        this(id, title, price, stock, author, "N/A");
     }
 
     public String getAuthor() { return author; } // only a Book has an author
@@ -121,13 +116,7 @@ class Stationery extends Product {
     private String brand;
 
     public Stationery(String id, String title, double price, int stock, String brand) {
-        super(id, title, price, stock); // SUPER: Product's 4-value constructor
-        this.brand = brand;
-    }
-
-    // CONSTRUCTOR OVERLOADING: no stock yet, so use Product's 3-value constructor.
-    public Stationery(String id, String title, double price, String brand) {
-        super(id, title, price);
+        super(id, title, price, stock); // SUPER: runs the Product constructor first
         this.brand = brand;
     }
 

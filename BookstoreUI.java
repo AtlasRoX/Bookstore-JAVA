@@ -37,14 +37,8 @@ public class BookstoreUI {
         return text.substring(0, width - 3) + "...";
     }
 
-    // METHOD OVERLOADING: newScreen(tab) uses the tab's name as the title,
-    // newScreen(tab, title) lets the caller choose the title.
-    public void newScreen(int tab) {
-        newScreen(tab, MENU[tab].toUpperCase());
-    }
-
     // Clears the screen (and old screens above it), then draws the title bar, menu tabs and screen name.
-    public void newScreen(int tab, String title) {
+    public void newScreen(int tab) {
         System.out.print(BODY + "\033[2J\033[3J\033[H");
         line(CYAN, String.format(" %-60s%17s ", "BOOKSTORE / INVENTORY MANAGER", "JAVA / LOCAL"));
         String tabs = "";
@@ -58,20 +52,15 @@ public class BookstoreUI {
             }
         }
         String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-        line(PURPLE, String.format(" %-60s%17s ", title, time));
+        line(PURPLE, String.format(" %-60s%17s ", MENU[tab].toUpperCase(), time));
         line(BODY, "");
     }
 
     // The bottom of every screen: a hint, then the menu question.
     public String askMenuChoice() {
         line(DIM, " " + "-".repeat(77));
-        line(DIM, " Type a menu number, or oop for the OOP demo. Type cancel to stop a task.");
+        line(DIM, " Type a menu number and press Enter. In any task, type cancel to stop.");
         return askText("Choose");
-    }
-
-    // One line of the OOP demo: the concept name in yellow, then what it shows.
-    public void showConcept(String name, String text) {
-        line(YELLOW, String.format(" %-16s", name) + BODY + text);
     }
 
     public void message(String text) {
@@ -220,6 +209,7 @@ public class BookstoreUI {
         line(BODY, String.format(" %-58s%19d", "Products", store.getProducts().size()));
         line(BODY, String.format(" %-58s%19d", "Low on stock (3 or fewer)", lowStock));
         line(BODY, String.format(" %-58s%19d", "Units in stock", unitsInStock));
+        line(BODY, String.format(" %-58s%19d", "New products added this session", Product.getCreatedCount()));
         line(WHITE, String.format(" %-58s%19.2f ", "Stock value at selling price (BDT)", stockValue));
         line(BODY, "");
     }
