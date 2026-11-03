@@ -17,7 +17,7 @@ public class Main {
         ui.showProducts(store.getProducts());
         while (true) {
             try {
-                String choice = ui.askMenuChoice().toLowerCase();
+                String choice = ui.askMenuChoice();
                 switch (choice) {
                     case "1": ui.newScreen(1); ui.showProducts(store.getProducts()); break;
                     case "2": ui.newScreen(2); search(); break;
@@ -28,7 +28,6 @@ public class Main {
                     case "7": ui.newScreen(7); refund(); break;
                     case "8": ui.newScreen(8); ui.showSales(store.getSales()); break;
                     case "9": ui.newScreen(9); ui.showReport(store); break;
-                    case "oop": oopDemo(); break;
                     case "0": ui.goodbye(); return;
                     default: ui.error("Please choose a number from the menu.");
                 }
@@ -74,8 +73,12 @@ public class Main {
         Product product; // SUPERCLASS reference: can hold a Book or a Stationery
         String extra;
         if (type == 'B') {
-            Book book = new Book(id, title, price, stock, ui.askText("Author"), ui.askText("ISBN"));
-            extra = " by " + book.getAuthor(); // SUBCLASS reference: getAuthor() works only here
+            String author = ui.askText("Author");
+            String isbn = ui.askText("ISBN (type - if it has none)");
+            Book book; // SUBCLASS reference
+            if (isbn.equals("-")) book = new Book(id, title, price, stock, author); // overloaded constructor
+            else book = new Book(id, title, price, stock, author, isbn);
+            extra = " by " + book.getAuthor(); // getAuthor() works only through the Book reference
             product = book;                    // UPCASTING: the Book is stored as a Product
         } else {
             Stationery item = new Stationery(id, title, price, stock, ui.askText("Brand"));
@@ -134,32 +137,5 @@ public class Main {
         ui.newScreen(7);
         ui.showReceipt(sale);
         ui.message(String.format("Refunded. Give back %.2f BDT. Stock returned.", sale.total));
-    }
-
-    // Shows every OOP concept working, using two demo objects (they are not saved).
-    static void oopDemo() {
-        ui.newScreen(-1, "OOP CONCEPTS DEMO"); // overloaded newScreen(int, String)
-        Book book = new Book("D1", "Java Basics", 100, 5, "Ann", "111"); // SUBCLASS reference
-        Stationery pen = new Stationery("D2", "Gel Pen", 20, "Pilot");    // overloaded constructor (no stock)
-        Product p = book;                                                 // SUPERCLASS reference (upcasting)
-        book.setPrice(-50);                                               // the setter refuses this
-
-        ui.showConcept("1 Abstraction", "Product is abstract: we make a Book or a Stationery");
-        ui.showConcept("2 Encapsulation", String.format("price is private; setPrice(-50) refused: %.2f", book.getPrice()));
-        ui.showConcept("3 Inheritance", "Book extends Product, so book.getTitle() = " + book.getTitle());
-        Product[] items = {book, pen};
-        for (Product item : items) {
-            ui.showConcept("4 Polymorphism", "item.getDetails() -> " + item.getDetails()); // same call, two results
-        }
-        ui.showConcept("5 Static", "Product.CURRENCY = " + Product.CURRENCY + ", Product.getCreatedCount() = " + Product.getCreatedCount());
-        ui.showConcept("6 Overloading", String.format("calculateDiscount(10) = %.2f, (10, 5) = %.2f",
-                book.calculateDiscount(10), book.calculateDiscount(10, 5)));
-        ui.showConcept("7 Overriding", "book.getType() = " + book.getType() + ", pen.getType() = " + pen.getType());
-        ui.showConcept("8 this", "this(id, title, price, 0) gave the pen stock = " + pen.getStock());
-        ui.showConcept("9 super", "Book's constructor starts with super(id, title, price, stock)");
-        ui.showConcept("10 Sub ref", "Book book -> book.getAuthor() = " + book.getAuthor());
-        ui.showConcept("10 Super ref", "Product p = book -> p.getType() = " + p.getType() + " (no getAuthor)");
-        ui.showConcept("11 Diamond", "p.getCategory() = " + p.getCategory());
-        ui.message("Demo objects are not saved. See README.md for where each concept is.");
     }
 }

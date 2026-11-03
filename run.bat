@@ -6,5 +6,5 @@ where wt >nul 2>nul
 if errorlevel 1 (
     start "Bookstore" cmd /c "mode con cols=80 lines=24 & java Main || pause"
 ) else (
-    start "" wt -w new --size 80,24 --pos 0,0 --title Bookstore -d . cmd /c "java Main || pause"
+    start "" wt -w new --size 80,24 --pos 0,0 -d . cmd /c "java Main || pause"
 )
