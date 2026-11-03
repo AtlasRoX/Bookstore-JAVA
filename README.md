@@ -1,6 +1,6 @@
 # Bookstore-JAVA
 
-A clean, easy-to-understand console-based Bookstore Management application built in Java. This project demonstrates core **Object-Oriented Programming (OOP)** principles in an accessible, practical format without unnecessary complexity.
+A console-based Bookstore Management application in Java with a colorful full-screen terminal interface. The code is kept short and uses simple syntax, and it demonstrates every core **Object-Oriented Programming (OOP)** concept from the course.
 
 ---
 
@@ -22,369 +22,285 @@ A clean, easy-to-understand console-based Bookstore Management application built
    - [11. Diamond Problem Resolution](#11-diamond-problem-resolution)
 5. [Application Features & Menu Guide](#application-features--menu-guide)
 6. [Data Persistence](#data-persistence)
+7. [সহজভাবে শিক্ষককে বলার জন্য](#সহজভাবে-শিক্ষককে-বলার-জন্য)
 
 ---
 
 ## Project Overview
 
-The Bookstore application enables store staff to:
-- Browse the current product catalog (books & stationery).
-- Add new products with type-specific attributes.
-- Restock existing inventory.
-- Update selling prices.
-- Process customer checkouts with optional membership discounts and cash change calculation.
-- Review past transaction receipts.
-- View real-time business financial summaries (total inventory value, revenue, net sales).
-- Run an interactive on-screen **OOP Demonstration**.
+The Bookstore application lets store staff:
+- Browse the product catalog (books and stationery); low stock is highlighted.
+- Search by ID, title, author, brand or ISBN.
+- Add new products with type-specific details.
+- Restock items and change prices.
+- Sell with an optional 5% member discount, cash and change calculation, and a printed receipt.
+- Refund a sale (stock goes back).
+- View sales history and a business report (income, units sold, stock value).
+- Run a live **OOP Concepts Demo** (type `oop` at the menu).
+
+If an answer is wrong (unknown ID, too little cash, a letter instead of a number…), the program says why and asks that question again. Typing `cancel` stops the current task without changing anything.
 
 ---
 
 ## How to Compile and Run
 
-### Prerequisites
-- **Java Development Kit (JDK 17 or higher)** installed and added to your system PATH.
+**Requirement:** Java Development Kit (JDK) 17 or newer on your PATH.
 
-### Steps
+**Easiest:** double-click `run.bat` (or type `.\run` in a terminal in this folder). It compiles the program and opens it in its own window that is exactly the program's size (80 × 24 characters). Choosing `0 Exit` closes the window.
 
-1. **Open PowerShell or Command Prompt** in the project directory:
-   ```powershell
-   cd "A:\bookstore-java (1)"
-   ```
+**By hand:** from this folder, in a terminal at least 80 characters wide:
 
-2. **Compile all Java source files**:
-   ```powershell
-   javac Main.java Product.java Bookstore.java
-   ```
+```powershell
+javac *.java
+java Main
+```
 
-3. **Run the program**:
-   ```powershell
-   java Main
-   ```
-   > **Note:** Java class names are case-sensitive. Always run with a capital **`M`** (`java Main`), not `java main`.
+> Java class names are case-sensitive: run `java Main` with a capital **M**.
 
 ---
 
 ## Project File Structure
 
 ```
-A:\bookstore-java (1)\
-│
-├── Product.java         # Base abstract class, subclasses (Book, Stationery), and diamond interfaces
-├── Bookstore.java       # Inventory, sales management, business logic, and file I/O
-├── Main.java            # Text-based console UI, interactive menu, input handling, and OOP demo
-├── bookstore_data.txt   # Automatic text-based storage file for inventory & sales
-└── README.md            # Complete project documentation and OOP concept guide
+Bookstore-JAVA/
+├── Product.java      # Interfaces Item/Trackable/Promotable, abstract Product, subclasses Book and Stationery
+├── Bookstore.java    # Business rules (add, restock, sell, refund, search) and saving/loading; also the Sale class
+├── BookstoreUI.java  # Everything on screen: colors, menu tabs, tables, receipt, input questions
+├── Main.java         # Starts the program, runs the menu, and the OOP demo
+├── run.bat           # Compiles and opens the program in a perfectly sized window
+└── README.md         # This guide
 ```
+
+**How the files work together:** `BookstoreUI` shows a screen and reads the user's answer → `Main` decides which task to run → `Bookstore` checks the rules, changes the data and saves it → `Product` provides the objects being stored and sold → `BookstoreUI` shows the result.
 
 ---
 
 ## Mapping of OOP Concepts in Code
 
-Here is the exact mapping of where and how each required OOP concept is implemented in the source code:
+Every concept below can also be seen **running**: type `oop` at the menu to open the OOP Concepts Demo screen.
 
 ---
 
 ### 1. Abstraction
-> **Definition:** Hiding internal implementation details and exposing only essential interfaces and behaviors to the outside world.
+> Hiding the details and showing only what is needed.
 
-* **Where it is used:** `Product.java`
-* **Implementation:**
-  1. `Product` is defined as an `abstract class`. It cannot be directly instantiated (`new Product(...)` is prohibited).
-  2. Declares abstract method signatures that every concrete product must provide:
-     ```java
-     public abstract String getType();
-     public abstract String getDetails();
-     ```
-  3. Uses interfaces (`Item`, `Trackable`, `Promotable`) to define behavioral contracts.
+* **Where:** `Product.java`
+* `Product` is an `abstract class`, so `new Product(...)` is not allowed; only a `Book` or `Stationery` can be created.
+* It declares abstract methods that every subclass **must** write:
+  ```java
+  public abstract String getType();
+  public abstract String getDetails();
+  ```
+* Interfaces (`Item`, `Trackable`, `Promotable`) describe behaviour without saying how the class stores its data.
 
 ---
 
 ### 2. Encapsulation
-> **Definition:** Restricting direct access to an object's internal components and state, exposing controlled access via getters and setters with validation.
+> Keeping data private and allowing access only through methods.
 
-* **Where it is used:** `Product.java`, `Bookstore.java`
-* **Implementation:**
-  1. All instance variables are declared `private`:
-     ```java
-     // Product.java
-     private String id;
-     private String title;
-     private double price;
-     private int stock;
-
-     // Book subclass
-     private String author;
-     private String isbn;
-     ```
-  2. Controlled access provided via public getters and setters with data validation:
-     ```java
-     public void setPrice(double price) {
-         if (price >= 0) {
-             this.price = price;
-         }
-     }
-     ```
+* **Where:** `Product.java` (and every other class keeps its fields `private`)
+* All fields are `private`:
+  ```java
+  private String id, title;
+  private double price;
+  private int stock;
+  ```
+* Getters give read access; setters check the value first:
+  ```java
+  public void setPrice(double price) {
+      if (price >= 0) this.price = price;
+  }
+  ```
 
 ---
 
 ### 3. Inheritance
-> **Definition:** Mechanism where a subclass inherits state and behaviors from a superclass, promoting code reuse.
+> A subclass gets the fields and methods of its superclass.
 
-* **Where it is used:** `Product.java`
-* **Implementation:**
-  1. `Book` inherits from `Product`:
-     ```java
-     public static class Book extends Product { ... }
-     ```
-  2. `Stationery` inherits from `Product`:
-     ```java
-     public static class Stationery extends Product { ... }
-     ```
-  Both subclasses automatically inherit `id`, `title`, `price`, `stock`, `getId()`, `setStock()`, and add their own specialized fields (`author`/`isbn` for `Book`, `brand` for `Stationery`).
+* **Where:** `Product.java`
+* `Book` and `Stationery` are **subclasses** of the **superclass** `Product`:
+  ```java
+  class Book extends Product { ... }
+  class Stationery extends Product { ... }
+  ```
+* Both inherit `id`, `title`, `price`, `stock`, `getTitle()`, `setStock()`… and add their own fields (`author`/`isbn` for `Book`, `brand` for `Stationery`).
 
 ---
 
 ### 4. Polymorphism
-> **Definition:** The ability of an object, reference, or method to take on multiple forms (Compile-Time and Runtime).
+> One name, many forms.
 
-#### A. Compile-Time Polymorphism (Method Overloading)
-* Multiple methods/constructors with the same name but different parameter lists.
-* See [Section 6: Method Overloading](#6-method-overloading).
-
-#### B. Runtime Polymorphism (Method Overriding & Dynamic Dispatch)
-* Calling overridden methods on a superclass reference dynamically executes the subclass's version at runtime.
-* In `Main.java`:
+* **Compile-time polymorphism** = method overloading → see [6. Method Overloading](#6-method-overloading).
+* **Runtime polymorphism** = method overriding + dynamic dispatch. The same call runs a different method depending on the real object. In `BookstoreUI.showProducts`:
   ```java
-  for (Product p : store.getInventory()) {
-      // Dynamic method dispatch: executes Book.getDetails() or Stationery.getDetails()
-      System.out.println(p.getDetails()); 
+  for (Product p : list) {
+      ... p.getDetails() ...   // runs Book.getDetails() or Stationery.getDetails()
   }
   ```
 
 ---
 
 ### 5. Static vs Non-Static
-> **Definition:** Static members belong to the class as a whole, while non-static (instance) members belong to individual object instances.
+> Static members belong to the class; non-static members belong to each object.
 
-* **Where it is used:** `Product.java`
+* **Where:** `Product.java` (also `Main.java`)
 
 | Type | Member | Explanation |
 | :--- | :--- | :--- |
-| **Static Variable** | `public static final String CURRENCY = "BDT";` | Shared by all instances of `Product`. |
-| **Static Variable** | `private static int totalProductsCount = 0;` | Class-level counter tracking total products created across the whole application. |
-| **Static Block** | `static { /* class initialization */ }` | Executes once when the class is loaded into memory. |
-| **Static Method** | `public static int getTotalProductsCount()` | Called directly on the class (`Product.getTotalProductsCount()`) without needing an instance. |
-| **Non-Static Variable** | `private double price;`, `private int stock;` | Each product instance maintains its own distinct price and stock. |
-| **Non-Static Method** | `public double getPrice()`, `public void setStock(int stock)` | Operates directly on the caller object's specific data. |
+| Static variable | `public static final String CURRENCY;` | One value shared by all products. |
+| Static variable | `private static int createdCount = 0;` | Counts every product object created. |
+| Static block | `static { CURRENCY = "BDT"; }` | Runs once when the class is loaded. |
+| Static method | `public static int getCreatedCount()` | Called on the class: `Product.getCreatedCount()`. |
+| Static methods/fields | `Main.sell()`, `Main.store`, `Main.ui` | Belong to the `Main` class; no object needed. |
+| Non-static variables | `private double price;`, `private int stock;` | Each product has its own price and stock. |
+| Non-static methods | `getPrice()`, `setStock(int)`, all `BookstoreUI` methods | Work on one object's own data. |
 
 ---
 
 ### 6. Method Overloading
-> **Definition:** Defining multiple methods in the same class with the same name but different parameter counts or parameter types.
+> Same method name, different parameters.
 
-* **Where it is used:** `Product.java`, `Bookstore.java`
-* **Implementation:**
-  1. **Constructor Overloading (`Product.java`):**
-     ```java
-     // Overload 1: 4 parameters
-     public Product(String id, String title, double price, int stock) { ... }
+* **Constructor overloading** (`Product.java`):
+  ```java
+  public Product(String id, String title, double price, int stock) { ... }
+  public Product(String id, String title, double price) { this(id, title, price, 0); }
 
-     // Overload 2: 3 parameters (defaults stock to 0)
-     public Product(String id, String title, double price) { ... }
-     ```
-  2. **Method Overloading in `Product.java`:**
-     ```java
-     // Overload 1: Calculate discount by percentage only
-     public double calculateDiscount(double percentage) {
-         return (this.price * percentage) / 100.0;
-     }
-
-     // Overload 2: Calculate discount by percentage AND maximum cap limit
-     public double calculateDiscount(double percentage, double maxCap) {
-         double discount = calculateDiscount(percentage);
-         return Math.min(discount, maxCap);
-     }
-     ```
-  3. **Method Overloading in `Bookstore.java`:**
-     ```java
-     // Overload 1: Restock by product ID String
-     public void restock(String id, int quantity) { ... }
-
-     // Overload 2: Restock by Product reference
-     public void restock(Product product, int quantity) {
-         restock(product.getId(), quantity);
-     }
-     ```
+  public Stationery(String id, String title, double price, int stock, String brand) { ... }
+  public Stationery(String id, String title, double price, String brand) { ... }
+  ```
+* **Method overloading** (`Product.java`) — the member discount uses the first one:
+  ```java
+  public double calculateDiscount(double percentage) { ... }
+  public double calculateDiscount(double percentage, double maxDiscount) { ... }
+  ```
+* **Method overloading** (`Bookstore.java`):
+  ```java
+  public void restock(String id, int quantity) { restock(get(id), quantity); }
+  public void restock(Product p, int quantity) { ... }
+  ```
+* **Method overloading** (`BookstoreUI.java`): `newScreen(int tab)` and `newScreen(int tab, String title)`.
 
 ---
 
 ### 7. Method Overriding
-> **Definition:** A subclass providing a specific implementation of a method that is already declared in its superclass or interface using the `@Override` annotation.
+> A subclass writes its own version of a method from its superclass or interface, marked with `@Override`.
 
-* **Where it is used:** `Product.java` (`Book` and `Stationery` subclasses)
-* **Implementation:**
+* **Where:** `Product.java`
   ```java
-  // In Book.java:
-  @Override
-  public String getType() {
-      return "BOOK";
-  }
+  // Book
+  @Override public String getType() { return "BOOK"; }
+  @Override public String getDetails() { return "Book by " + author + ", ISBN " + isbn; }
 
-  @Override
-  public String getDetails() {
-      return "Author: " + this.author + " | ISBN: " + this.isbn;
-  }
+  // Stationery
+  @Override public String getType() { return "STATIONERY"; }
+  @Override public String getDetails() { return "Stationery by " + brand; }
+  ```
+* `Product` also overrides `getCategory()` from its interfaces (see [11](#11-diamond-problem-resolution)).
 
-  // In Stationery.java:
-  @Override
-  public String getType() {
-      return "STATIONERY";
-  }
+---
 
-  @Override
-  public String getDetails() {
-      return "Brand: " + this.brand;
+### 8. 'this' Keyword
+> `this` means "the current object".
+
+* **Where:** `Product.java`
+* Telling a field apart from a parameter with the same name:
+  ```java
+  this.id = id; // this.id is the object's field, id is the parameter
+  ```
+* Constructor chaining with `this(...)`:
+  ```java
+  public Product(String id, String title, double price) {
+      this(id, title, price, 0); // calls the 4-value constructor, stock = 0
   }
   ```
 
 ---
 
-### 8. 'this' Keyword
-> **Definition:** A reference variable that refers to the current object instance.
-
-* **Where it is used:** `Product.java`, `Bookstore.java`
-* **Implementation:**
-  1. **Resolving Variable Shadowing:** Differentiates instance variables from constructor parameters:
-     ```java
-     public Product(String id, String title, double price, int stock) {
-         this.id = id;         // this.id is the field; id is the parameter
-         this.title = title;
-         this.price = price;
-         this.stock = stock;
-     }
-     ```
-  2. **Constructor Chaining (`this(...)`):** Calls another constructor in the same class:
-     ```java
-     public Product(String id, String title, double price) {
-         this(id, title, price, 0); // Calls the 4-parameter constructor
-     }
-     ```
-
----
-
 ### 9. 'super' Keyword
-> **Definition:** A reference variable used to refer directly to the immediate parent class object.
+> `super` refers to the parent (superclass).
 
-* **Where it is used:** `Product.java`
-* **Implementation:**
-  1. **Invoking Superclass Constructor:** Subclasses `Book` and `Stationery` pass shared attributes to `Product` via `super(...)`:
-     ```java
-     public Book(String id, String title, double price, int stock, String author, String isbn) {
-         super(id, title, price, stock); // Calls Product constructor
-         this.author = author;
-         this.isbn = isbn;
-     }
-     ```
+* **Where:** `Product.java`
+* Calling the superclass constructor:
+  ```java
+  public Book(String id, String title, double price, int stock, String author, String isbn) {
+      super(id, title, price, stock); // runs the Product constructor first
+      this.author = author;
+      this.isbn = isbn;
+  }
+  ```
+* Calling a parent interface's version: `Trackable.super.getCategory()` (see [11](#11-diamond-problem-resolution)).
 
 ---
 
 ### 10. Subclass Reference vs Superclass Reference
-> **Definition:** 
-> - **Subclass Reference:** Reference typed as the concrete child class; can access subclass-specific methods.
-> - **Superclass Reference:** Reference typed as the parent class; points to child object (Upcasting), enabling polymorphic method dispatch.
+> A **subclass reference** (`Book book`) can use everything a Book has. A **superclass reference** (`Product product`) can point to any subclass object (upcasting) but only sees `Product` methods.
 
-* **Where it is used:** `Main.java` (`addProduct()` method)
-* **Implementation:**
+* **Where:** `Main.java` → `addProduct()`
   ```java
-  // 1. SUBCLASS REFERENCE:
-  // Typed as Product.Book -> gives access to Book-specific getters
-  Product.Book book = new Product.Book(id, title, price, stock, author, isbn);
-  System.out.println("Author: " + book.getAuthor()); // Accessible via subclass reference
-
-  // 2. SUPERCLASS REFERENCE (Upcasting):
-  // Typed as base class Product -> allows storing in generic inventory
-  Product product = book; 
-  store.addProduct(product);
+  Product product;                      // SUPERCLASS reference
+  if (type == 'B') {
+      Book book = new Book(id, title, price, stock, author, isbn);  // SUBCLASS reference
+      extra = " by " + book.getAuthor(); // getAuthor() works only through the Book reference
+      product = book;                    // UPCASTING: the Book is stored as a Product
+  }
+  store.add(product);                    // the inventory stores every item as a Product
   ```
 
 ---
 
 ### 11. Diamond Problem Resolution
-> **Definition:** The Diamond Problem occurs when a class inherits from two sources that provide conflicting implementations of the same method. 
-> 
-> In Java, multiple class inheritance (`class C extends A, B`) is prohibited to prevent this issue. However, multiple interface inheritance with `default` methods creates an interface-level diamond.
+> Java forbids `class C extends A, B` to avoid the diamond problem. With interfaces it can still happen when two interfaces give different `default` versions of the same method.
 
-* **Where it is used:** `Product.java`
-* **The Structure:**
+* **Where:** `Product.java`
   ```
-                 Item (default getCategory())
-                  /  \
-         Trackable    Promotable  (both override getCategory() with default implementations)
-                  \  /
-                 Product (COMPILER FORCES Product to override and resolve!)
+                  Item            default getCategory() -> "Item"
+                /      \
+         Trackable    Promotable  each overrides getCategory() with its own default
+                \      /
+                Product           Java forces Product to choose
   ```
-* **Implementation in `Product.java`:**
+* Because `Product implements Trackable, Promotable`, the program does not compile until `Product` overrides the method and picks explicitly with `InterfaceName.super.method()`:
   ```java
-  interface Item {
-      default String getCategory() { return "General Item"; }
-  }
-
-  interface Trackable extends Item {
-      @Override
-      default String getCategory() { return "Trackable Inventory"; }
-  }
-
-  interface Promotable extends Item {
-      @Override
-      default String getCategory() { return "Promotional Merchandise"; }
+  @Override
+  public String getCategory() {
+      return Trackable.super.getCategory() + " & " + Promotable.super.getCategory();
   }
   ```
-* **Explicit Resolution in `Product`:**
-  Because both `Trackable` and `Promotable` provide default implementations of `getCategory()`, the Java compiler refuses to compile until `Product` overrides the method and explicitly resolves the conflict using `InterfaceName.super.methodName()`:
-  ```java
-  public abstract class Product implements Trackable, Promotable {
-      @Override
-      public String getCategory() {
-          // Explicitly resolves diamond ambiguity:
-          return Trackable.super.getCategory() + " & " + Promotable.super.getCategory();
-      }
-  }
-  ```
+* The result (`Tracked stock & Promotable`) is shown on the product card when you restock, change a price or sell.
 
 ---
 
 ## Application Features & Menu Guide
 
-When you launch `java Main`, you are greeted with this menu:
+Every screen has a cyan title bar, menu tabs (the current screen is highlighted), a purple bar with the screen name and clock, and a purple input bar at the bottom. Success messages are green, problems are red, and low-stock rows are yellow with a `!`.
 
-```
-====================================================================
-                   WELCOME TO JAVA BOOKSTORE                        
-====================================================================
---------------------------------------------------------------------
- [1] View Inventory     [2] Add Product       [3] Restock Product
- [4] Change Price       [5] Sell / Checkout   [6] Sales History
- [7] Business Reports   [8] OOP Concepts Demo [0] Exit
---------------------------------------------------------------------
-```
-
-| Option | Shortcut | Functionality |
+| Option | Screen | What it does |
 | :---: | :--- | :--- |
-| `[1]` | `inv`, `inventory` | Displays table of all inventory items, prices, quantities, details, and diamond-problem tags. |
-| `[2]` | `add`, `a` | Step-by-step form to create a new Book or Stationery item (demonstrates subclass reference to superclass reference upcasting). |
-| `[3]` | `restock`, `r` | Restocks quantity of an existing item using overloaded `store.restock(...)`. |
-| `[4]` | `price` | Updates the unit selling price of any product. |
-| `[5]` | `sell`, `checkout` | Sells products, applies optional 5% member discount, validates cash received, and prints change returned. |
-| `[6]` | `sales` | Lists all past issued sales receipts with totals and change amounts. |
-| `[7]` | `reports`, `rep` | Shows financial overview: total unique titles, total units in stock, total inventory asset value, total units sold, and net revenue. |
-| `[8]` | `demo`, `oop` | Runs a live interactive demonstration showcasing all OOP concepts and their console outputs. |
-| `[0]` | `exit`, `quit` | Saves all data and safely exits the program. |
+| `1` | Products | Table of all products; low stock (3 or fewer) is yellow and marked `!`. |
+| `2` | Search | Finds products by ID, title, author, brand or ISBN. |
+| `3` | Add product | Creates a Book or Stationery (shows subclass → superclass upcasting). |
+| `4` | Restock | Adds units to a product (uses the overloaded `restock(String, int)`). |
+| `5` | Change price | Sets a new unit price. |
+| `6` | Sell | Quantity, optional 5% member discount, cash and change, then a paper-style receipt. |
+| `7` | Refund | Full refund of a receipt; the stock goes back. A receipt can be refunded only once. |
+| `8` | Sales | History of all receipts; refunded ones are yellow. |
+| `9` | Report | Income after refunds, units sold, products, low stock, units in stock, stock value. |
+| `oop` | OOP demo | Shows all 11 OOP concepts running with two demo objects. |
+| `0` | Exit | Closes the program (everything is already saved). |
 
 ---
 
 ## Data Persistence
 
-All inventory items and completed sales receipts are automatically saved to:
-`bookstore_data.txt`
+Every change is saved straight away to `bookstore.dat` in the program folder, using Java object serialization (`ObjectOutputStream` saves the whole `Bookstore` object, products and sales, in one step; `ObjectInputStream` loads it at start-up). If the file does not exist, the store starts empty. The data file is not uploaded to GitHub (see `.gitignore`).
 
-When the application starts, it reads existing data from this file. If the file does not exist, it initializes with a default starter catalog (`Clean Code`, `Effective Java`, `Pilot Gel Pen Pack`).
+---
+
+## সহজভাবে শিক্ষককে বলার জন্য
+
+- **Main.java:** পুরো প্রোগ্রাম চালু করে, মেনু চালায় এবং কোন অপশনে কোন কাজ হবে তা ঠিক করে। এখানে OOP ডেমোও আছে।
+- **Product.java:** বই ও স্টেশনারি পণ্যের তথ্য এবং তাদের ধরন তৈরি করে। এখানে abstraction, encapsulation, inheritance, overriding, overloading, static, this, super এবং diamond problem দেখানো হয়েছে।
+- **Bookstore.java:** পণ্য যোগ, স্টক বাড়ানো, বিক্রি, রিফান্ড এবং ফাইলে তথ্য সংরক্ষণের কাজ করে।
+- **BookstoreUI.java:** স্ক্রিন, মেনু, রং, টেবিল দেখানো এবং ব্যবহারকারীর কাছ থেকে ইনপুট নেওয়ার কাজ করে।
+
+**এক লাইনে:** UI ইনপুট/আউটপুট সামলায়, Main কাজটি পরিচালনা করে, Bookstore নিয়ম ও ডেটা সামলায়, আর Product পণ্যের কাঠামো দেয়। মেনুতে `oop` লিখলে সব OOP concept চলমান অবস্থায় দেখা যায়।

@@ -1,222 +1,141 @@
-import java.util.Locale;
+import java.io.Serializable;
 
-// =============================================================================
-// [DIAMOND PROBLEM DEMONSTRATION WITH INTERFACES]
-// In Java, multiple class inheritance (class C extends A, B) is forbidden
-// to avoid the Diamond Problem (ambiguity from multiple parent classes).
+// DIAMOND PROBLEM: Trackable and Promotable both extend Item, and both give their own
+// default getCategory(). Product implements both, so Java forces Product to choose.
 //
-// However, Java allows multiple interface inheritance. When two interfaces
-// provide conflicting default methods, an interface-level diamond problem occurs:
-//
-//               Item (default getCategory())
-//                /  \
-//       Trackable    Promotable  (both override getCategory() with default implementations)
-//                \  /
-//               Product (COMPILER FORCES Product to override and resolve the conflict!)
-// =============================================================================
-
+//                Item
+//              /      \
+//       Trackable    Promotable
+//              \      /
+//              Product
 interface Item {
-    default String getCategory() {
-        return "General Item";
-    }
+    default String getCategory() { return "Item"; }
 }
 
 interface Trackable extends Item {
     @Override
-    default String getCategory() {
-        return "Trackable Inventory";
-    }
+    default String getCategory() { return "Tracked stock"; }
 }
 
 interface Promotable extends Item {
     @Override
-    default String getCategory() {
-        return "Promotional Merchandise";
-    }
+    default String getCategory() { return "Promotable"; }
 }
 
-// =============================================================================
-// [ABSTRACTION]: Abstract class Product cannot be instantiated directly.
-// It serves as a blueprint for all products in the bookstore.
-// It also implements both Trackable and Promotable interfaces.
-// =============================================================================
-public abstract class Product implements Trackable, Promotable {
+// ABSTRACTION: Product is abstract, so the program can only make a Book or a Stationery.
+// ENCAPSULATION: the fields are private and are used only through getters and setters.
+public abstract class Product implements Trackable, Promotable, Serializable {
+    private static final long serialVersionUID = 1L; // keeps saved files readable after code edits
 
-    // [STATIC VARIABLE]: Shared across all instances of Product
-    public static final String CURRENCY = "BDT";
-    private static int totalProductsCount = 0;
+    // STATIC variables belong to the class and are shared by every product.
+    public static final String CURRENCY;
+    private static int createdCount = 0;
 
-    // [STATIC BLOCK]: Executes once when class is loaded into memory
+    // STATIC BLOCK: runs once, when Java first loads the Product class.
     static {
-        // Static class-level initialization
+        CURRENCY = "BDT";
     }
 
-    // [ENCAPSULATION & NON-STATIC (INSTANCE) VARIABLES]:
-    // Private variables prevent direct outside modification.
-    // Each Product object has its own copy of these fields.
-    private String id;
-    private String title;
+    // NON-STATIC (instance) variables: every product object has its own copy.
+    private String id, title;
     private double price;
     private int stock;
 
-    // =========================================================================
-    // [CONSTRUCTOR OVERLOADING 1]: Full 4-parameter constructor
-    // =========================================================================
+    // CONSTRUCTOR OVERLOADING 1: all four values.
     public Product(String id, String title, double price, int stock) {
-        // [THIS KEYWORD - Shadowing]: 'this.id' refers to instance field, 'id' is parameter
-        this.id = (id == null) ? "UNKNOWN" : id.trim().toUpperCase(Locale.ROOT);
-        this.title = (title == null) ? "Untitled" : title.trim();
-        this.price = Math.max(0.0, price);
-        this.stock = Math.max(0, stock);
-
-        // Modifying static counter whenever any product is instantiated
-        totalProductsCount++;
+        this.id = id; // THIS: this.id is the object's field, id is the parameter
+        this.title = title;
+        this.price = price;
+        this.stock = stock;
+        createdCount++;
     }
 
-    // =========================================================================
-    // [CONSTRUCTOR OVERLOADING 2 & THIS KEYWORD - Constructor Chaining]:
-    // Calls the 4-parameter constructor using this(...) defaulting stock to 0
-    // =========================================================================
+    // CONSTRUCTOR OVERLOADING 2: no stock given. THIS(...) calls the constructor above.
     public Product(String id, String title, double price) {
-        this(id, title, price, 0); // Constructor chaining
+        this(id, title, price, 0);
     }
 
-    // =========================================================================
-    // [DIAMOND PROBLEM RESOLUTION]:
-    // Both Trackable and Promotable define getCategory().
-    // Java forces Product to override getCategory() to eliminate ambiguity.
-    // We explicitly resolve it using InterfaceName.super.methodName().
-    // =========================================================================
+    // STATIC METHOD: called on the class itself, e.g. Product.getCreatedCount()
+    public static int getCreatedCount() { return createdCount; }
+
+    // NON-STATIC METHODS: getters and setters work on one object's own data.
+    public String getId() { return id; }
+    public String getTitle() { return title; }
+    public double getPrice() { return price; }
+    public int getStock() { return stock; }
+
+    // The setters protect the data: a negative value is refused.
+    public void setPrice(double price) {
+        if (price >= 0) this.price = price;
+    }
+
+    public void setStock(int stock) {
+        if (stock >= 0) this.stock = stock;
+    }
+
+    // METHOD OVERLOADING 1: discount on one item by percentage.
+    public double calculateDiscount(double percentage) {
+        return price * percentage / 100;
+    }
+
+    // METHOD OVERLOADING 2: same name, one more parameter: discount with a maximum limit.
+    public double calculateDiscount(double percentage, double maxDiscount) {
+        return Math.min(calculateDiscount(percentage), maxDiscount);
+    }
+
+    // DIAMOND PROBLEM SOLVED: we say exactly which parent versions to use.
     @Override
     public String getCategory() {
         return Trackable.super.getCategory() + " & " + Promotable.super.getCategory();
     }
 
-    // =========================================================================
-    // [STATIC METHOD]: Can be called without creating an object instance
-    // e.g. Product.getTotalProductsCount()
-    // =========================================================================
-    public static int getTotalProductsCount() {
-        return totalProductsCount;
-    }
-
-    // =========================================================================
-    // [NON-STATIC METHODS & ENCAPSULATION (GETTERS & SETTERS)]
-    // Operate on the specific instance's data.
-    // =========================================================================
-    public String getId() { return this.id; }
-    public String getTitle() { return this.title; }
-    public double getPrice() { return this.price; }
-    public int getStock() { return this.stock; }
-
-    public void setPrice(double price) {
-        if (price >= 0) {
-            this.price = price;
-        }
-    }
-
-    public void setStock(int stock) {
-        if (stock >= 0) {
-            this.stock = stock;
-        }
-    }
-
-    // =========================================================================
-    // [METHOD OVERLOADING 1]: Calculate discount with rate only
-    // =========================================================================
-    public double calculateDiscount(double percentage) {
-        return (this.price * percentage) / 100.0;
-    }
-
-    // =========================================================================
-    // [METHOD OVERLOADING 2]: Calculate discount with rate AND max limit
-    // =========================================================================
-    public double calculateDiscount(double percentage, double maxCap) {
-        double discount = calculateDiscount(percentage);
-        return Math.min(discount, maxCap);
-    }
-
-    // =========================================================================
-    // [ABSTRACTION]: Abstract methods that concrete subclasses MUST implement
-    // =========================================================================
+    // ABSTRACT METHODS: every subclass must write its own version (overriding).
     public abstract String getType();
     public abstract String getDetails();
+}
 
-    // =========================================================================
-    // [INHERITANCE]: Book IS-A Product (subclass inherits from superclass Product)
-    // =========================================================================
-    public static class Book extends Product {
-        // [ENCAPSULATION]: Subclass-specific private attributes
-        private String author;
-        private String isbn;
+// INHERITANCE: Book is a subclass of the superclass Product.
+class Book extends Product {
+    private static final long serialVersionUID = 1L;
+    private String author, isbn;
 
-        // [CONSTRUCTOR OVERLOADING 1]
-        public Book(String id, String title, double price, int stock, String author, String isbn) {
-            // [SUPER KEYWORD]: Calls the superclass (Product) constructor
-            super(id, title, price, stock);
-            // [THIS KEYWORD]
-            this.author = (author == null) ? "Unknown" : author.trim();
-            this.isbn = (isbn == null) ? "N/A" : isbn.trim();
-        }
-
-        // [CONSTRUCTOR OVERLOADING 2 & THIS KEYWORD: Constructor Chaining]
-        public Book(String id, String title, double price, String author, String isbn) {
-            this(id, title, price, 0, author, isbn);
-        }
-
-        // [SUBCLASS-SPECIFIC GETTERS]: Accessible via Subclass Reference
-        public String getAuthor() { return this.author; }
-        public String getIsbn() { return this.isbn; }
-
-        // =====================================================================
-        // [METHOD OVERRIDING & RUNTIME POLYMORPHISM]:
-        // Subclass provides its own concrete implementation of abstract methods
-        // =====================================================================
-        @Override
-        public String getType() {
-            return "BOOK";
-        }
-
-        @Override
-        public String getDetails() {
-            return "Author: " + this.author + " | ISBN: " + this.isbn;
-        }
+    public Book(String id, String title, double price, int stock, String author, String isbn) {
+        super(id, title, price, stock); // SUPER: runs the Product constructor first
+        this.author = author;
+        this.isbn = isbn;
     }
 
-    // =========================================================================
-    // [INHERITANCE]: Stationery IS-A Product (subclass inherits from Product)
-    // =========================================================================
-    public static class Stationery extends Product {
-        // [ENCAPSULATION]: Subclass-specific private attribute
-        private String brand;
+    public String getAuthor() { return author; } // only a Book has an author
 
-        // [CONSTRUCTOR OVERLOADING 1]
-        public Stationery(String id, String title, double price, int stock, String brand) {
-            // [SUPER KEYWORD]: Calls the superclass constructor
-            super(id, title, price, stock);
-            // [THIS KEYWORD]
-            this.brand = (brand == null) ? "Generic" : brand.trim();
-        }
+    // METHOD OVERRIDING: Book's own versions of Product's abstract methods.
+    @Override
+    public String getType() { return "BOOK"; }
 
-        // [CONSTRUCTOR OVERLOADING 2 & THIS KEYWORD: Constructor Chaining]
-        public Stationery(String id, String title, double price, String brand) {
-            this(id, title, price, 0, brand);
-        }
+    @Override
+    public String getDetails() { return "Book by " + author + ", ISBN " + isbn; }
+}
 
-        // [SUBCLASS-SPECIFIC GETTER]: Accessible via Subclass Reference
-        public String getBrand() { return this.brand; }
+// INHERITANCE: Stationery is another subclass of Product.
+class Stationery extends Product {
+    private static final long serialVersionUID = 1L;
+    private String brand;
 
-        // =====================================================================
-        // [METHOD OVERRIDING & RUNTIME POLYMORPHISM]
-        // =====================================================================
-        @Override
-        public String getType() {
-            return "STATIONERY";
-        }
-
-        @Override
-        public String getDetails() {
-            return "Brand: " + this.brand;
-        }
+    public Stationery(String id, String title, double price, int stock, String brand) {
+        super(id, title, price, stock); // SUPER: Product's 4-value constructor
+        this.brand = brand;
     }
+
+    // CONSTRUCTOR OVERLOADING: no stock yet, so use Product's 3-value constructor.
+    public Stationery(String id, String title, double price, String brand) {
+        super(id, title, price);
+        this.brand = brand;
+    }
+
+    public String getBrand() { return brand; } // only Stationery has a brand
+
+    @Override
+    public String getType() { return "STATIONERY"; }
+
+    @Override
+    public String getDetails() { return "Stationery by " + brand; }
 }
