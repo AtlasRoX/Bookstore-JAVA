@@ -1,171 +1,130 @@
 import java.io.*;
-import java.util.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
 
-/**
- * Bookstore manages inventory catalog, sales records, and persistence.
- * Demonstrates Encapsulation, Superclass Reference collections, and Method Overloading.
- */
-public class Bookstore {
+// The bookstore rules and the data file. This class never prints anything.
+public class Bookstore implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private static final String FILE = "bookstore.dat";
+    private ArrayList<Product> products = new ArrayList<>();
+    private ArrayList<Sale> sales = new ArrayList<>();
 
-    // Simple record for storing sales receipts
-    public record Sale(int id, String productId, String title, int quantity,
-                       double unitPrice, double discount, double total, double paid, double change) {}
+    public ArrayList<Product> getProducts() { return products; }
+    public ArrayList<Sale> getSales() { return sales; }
 
-    // [ENCAPSULATION & NON-STATIC VARIABLES]: Private internal state
-    // [SUPERCLASS REFERENCE in Collection]:
-    // 'inventory' holds Product superclass references pointing to Book or Stationery objects.
-    private final List<Product> inventory = new ArrayList<>();
-    private final List<Sale> sales = new ArrayList<>();
-    private final File dataFile;
-    private int nextSaleId = 1;
-
-    public Bookstore(String filename) {
-        // [THIS KEYWORD]
-        this.dataFile = new File(filename);
-        load();
-    }
-
-    public List<Product> getInventory() {
-        return Collections.unmodifiableList(inventory);
-    }
-
-    public List<Sale> getSales() {
-        return Collections.unmodifiableList(sales);
-    }
-
-    // [SUPERCLASS REFERENCE PARAMETER]: Accepts any Product subclass
-    public void addProduct(Product product) {
-        if (product == null) throw new IllegalArgumentException("Product cannot be null.");
-        if (findProduct(product.getId()) != null) {
-            throw new IllegalArgumentException("Product with ID " + product.getId() + " already exists.");
-        }
-        inventory.add(product);
-        save();
-    }
-
-    // =========================================================================
-    // [METHOD OVERLOADING 1]: Find product by ID string
-    // Returns a Superclass Reference (Product)
-    // =========================================================================
-    public Product findProduct(String id) {
-        if (id == null) return null;
-        for (Product p : inventory) {
-            if (p.getId().equalsIgnoreCase(id.trim())) {
-                return p;
-            }
+    // Returns the product with this ID, or null if there is none.
+    public Product find(String id) {
+        for (Product p : products) {
+            if (p.getId().equalsIgnoreCase(id)) return p;
         }
         return null;
     }
 
-    // =========================================================================
-    // [METHOD OVERLOADING 2]: Find product by existing Product reference
-    // =========================================================================
-    public Product findProduct(Product product) {
-        if (product == null) return null;
-        return findProduct(product.getId());
+    // Same as find, but stops with an error message if the ID does not exist.
+    public Product get(String id) {
+        Product p = find(id);
+        if (p == null) throw new RuntimeException("No product with ID " + id + ".");
+        return p;
     }
 
-    // =========================================================================
-    // [METHOD OVERLOADING 1]: Restock by Product ID string
-    // =========================================================================
+    public ArrayList<Product> search(String text) {
+        ArrayList<Product> found = new ArrayList<>();
+        for (Product p : products) {
+            String all = p.getId() + " " + p.getTitle() + " " + p.getDetails();
+            if (all.toLowerCase().contains(text.toLowerCase())) found.add(p);
+        }
+        return found;
+    }
+
+    public void add(Product p) {
+        if (find(p.getId()) != null) throw new RuntimeException("ID " + p.getId() + " is already used.");
+        products.add(p);
+        save();
+    }
+
+    // METHOD OVERLOADING: restock by product ID, or by the product object itself.
     public void restock(String id, int quantity) {
-        if (quantity <= 0) throw new IllegalArgumentException("Restock quantity must be positive.");
-        Product p = findProduct(id);
-        if (p == null) throw new IllegalArgumentException("Product not found: " + id);
+        restock(get(id), quantity);
+    }
+
+    public void restock(Product p, int quantity) {
+        if (quantity < 1) throw new RuntimeException("Quantity must be at least 1.");
         p.setStock(p.getStock() + quantity);
         save();
     }
 
-    // =========================================================================
-    // [METHOD OVERLOADING 2]: Restock by Product reference
-    // =========================================================================
-    public void restock(Product product, int quantity) {
-        if (product == null) throw new IllegalArgumentException("Product cannot be null.");
-        restock(product.getId(), quantity); // Delegating to overloaded method
-    }
-
-    public void changePrice(String id, double newPrice) {
-        if (newPrice < 0) throw new IllegalArgumentException("Price cannot be negative.");
-        Product p = findProduct(id);
-        if (p == null) throw new IllegalArgumentException("Product not found: " + id);
-        p.setPrice(newPrice);
+    public void changePrice(Product p, double price) {
+        p.setPrice(price);
         save();
     }
 
-    public Sale sell(String id, int quantity, boolean memberDiscount, double cashPaid) {
-        Product p = findProduct(id);
-        if (p == null) throw new IllegalArgumentException("Product not found: " + id);
-        if (quantity <= 0) throw new IllegalArgumentException("Quantity must be greater than zero.");
-        if (quantity > p.getStock()) throw new IllegalArgumentException("Insufficient stock. Available: " + p.getStock());
+    // Members get 5% off. The total is rounded to 2 decimal places.
+    public double total(Product p, int quantity, boolean member) {
+        if (quantity < 1 || quantity > p.getStock())
+            throw new RuntimeException("Quantity must be from 1 to " + p.getStock() + ".");
+        double total = p.getPrice() * quantity;
+        if (member) total = total - p.calculateDiscount(5) * quantity;
+        return Math.round(total * 100) / 100.0;
+    }
 
-        double subtotal = p.getPrice() * quantity;
-        double discountRate = memberDiscount ? 5.0 : 0.0;
-        double discount = (subtotal * discountRate) / 100.0;
-        double total = subtotal - discount;
-
-        if (cashPaid < total) {
-            throw new IllegalArgumentException(String.format("Payment insufficient. Total is BDT %.2f, paid BDT %.2f", total, cashPaid));
-        }
-
-        double change = cashPaid - total;
-
-        // Deduct stock
+    public Sale sell(Product p, int quantity, boolean member, double paid) {
+        double total = total(p, quantity, member);
+        if (paid < total) throw new RuntimeException("Cash is less than the total. Sale cancelled.");
         p.setStock(p.getStock() - quantity);
-
-        Sale sale = new Sale(nextSaleId++, p.getId(), p.getTitle(), quantity, p.getPrice(), discount, total, cashPaid, change);
+        Sale sale = new Sale(sales.size() + 1, p, quantity, total, paid);
         sales.add(sale);
         save();
         return sale;
     }
 
-    // =========================================================================
-    // Clean and simple file storage (persists inventory and sales)
-    // =========================================================================
+    public Sale getSale(int number) {
+        if (number < 1 || number > sales.size()) throw new RuntimeException("No receipt #" + number + ".");
+        return sales.get(number - 1);
+    }
+
+    public void refund(Sale sale) {
+        if (sale.refunded) throw new RuntimeException("Receipt #" + sale.id + " was already refunded.");
+        sale.refunded = true;
+        Product p = get(sale.productId);
+        p.setStock(p.getStock() + sale.quantity);
+        save();
+    }
+
+    // Saves the whole bookstore (products and sales) to the file in one step.
     private void save() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(dataFile))) {
-            writer.println("# PRODUCTS");
-            for (Product p : inventory) {
-                if (p instanceof Product.Book b) {
-                    writer.printf("BOOK|%s|%s|%.2f|%d|%s|%s%n", b.getId(), b.getTitle(), b.getPrice(), b.getStock(), b.getAuthor(), b.getIsbn());
-                } else if (p instanceof Product.Stationery s) {
-                    writer.printf("STAT|%s|%s|%.2f|%d|%s%n", s.getId(), s.getTitle(), s.getPrice(), s.getStock(), s.getBrand());
-                }
-            }
-            writer.println("# SALES");
-            for (Sale s : sales) {
-                writer.printf("SALE|%d|%s|%s|%d|%.2f|%.2f|%.2f|%.2f|%.2f%n",
-                        s.id(), s.productId(), s.title(), s.quantity(), s.unitPrice(), s.discount(), s.total(), s.paid(), s.change());
-            }
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE))) {
+            out.writeObject(this);
         } catch (IOException e) {
-            System.err.println("Could not save data: " + e.getMessage());
+            throw new RuntimeException("Could not save: " + e.getMessage());
         }
     }
 
-    private void load() {
-        if (!dataFile.exists()) return;
-        try (BufferedReader reader = new BufferedReader(new FileReader(dataFile))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) continue;
-                String[] parts = line.split("\\|", -1);
-                if (parts[0].equals("BOOK") && parts.length >= 7) {
-                    inventory.add(new Product.Book(parts[1], parts[2], Double.parseDouble(parts[3]),
-                            Integer.parseInt(parts[4]), parts[5], parts[6]));
-                } else if (parts[0].equals("STAT") && parts.length >= 6) {
-                    inventory.add(new Product.Stationery(parts[1], parts[2], Double.parseDouble(parts[3]),
-                            Integer.parseInt(parts[4]), parts[5]));
-                } else if (parts[0].equals("SALE") && parts.length >= 10) {
-                    int id = Integer.parseInt(parts[1]);
-                    sales.add(new Sale(id, parts[2], parts[3], Integer.parseInt(parts[4]),
-                            Double.parseDouble(parts[5]), Double.parseDouble(parts[6]),
-                            Double.parseDouble(parts[7]), Double.parseDouble(parts[8]),
-                            Double.parseDouble(parts[9])));
-                    if (id >= nextSaleId) nextSaleId = id + 1;
-                }
-            }
+    // Reads the saved bookstore, or starts an empty one the first time.
+    public static Bookstore load() {
+        if (!new File(FILE).exists()) return new Bookstore();
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(FILE))) {
+            return (Bookstore) in.readObject();
         } catch (Exception e) {
-            System.err.println("Note: Starting with fresh/default inventory (" + e.getMessage() + ")");
+            throw new RuntimeException("Could not read " + FILE + ": " + e.getMessage());
         }
+    }
+}
+
+// One sale (receipt). It keeps the title and total even if the product changes later.
+class Sale implements Serializable {
+    private static final long serialVersionUID = 1L;
+    int id, quantity;
+    String date, productId, title;
+    double total, paid;
+    boolean refunded;
+
+    Sale(int id, Product p, int quantity, double total, double paid) {
+        this.id = id;
+        this.date = LocalDate.now().toString();
+        this.productId = p.getId();
+        this.title = p.getTitle();
+        this.quantity = quantity;
+        this.total = total;
+        this.paid = paid;
     }
 }
