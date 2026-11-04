@@ -16,7 +16,8 @@ public class BookstoreUI {
     private static final String RESET = "\033[0m";                                 // terminal's own colors
     // Menu tab names; the position is the key (0 = Exit).
     private static final String[] MENU = {"Exit", "Products", "Search", "Add product", "Restock",
-            "Change price", "Sell", "Refund", "Sales", "Report"};
+            "Change price", "Sell", "Refund", "Sales", "Report", "Delete"};
+    private static final int[] TAB_WIDTH = {13, 11, 16, 12, 17, 8}; // width of each tab column, so both rows line up
     private Scanner in = new Scanner(System.in); // reads what the user types
 
     public BookstoreUI() {
@@ -41,11 +42,12 @@ public class BookstoreUI {
         System.out.print(BODY + "\033[2J\033[3J\033[H");
         line(CYAN, String.format(" %-60s%17s ", "BOOKSTORE / INVENTORY MANAGER", "JAVA / LOCAL"));
         String tabs = "";
-        for (int n = 1; n <= 10; n++) {
-            int number = n % 10; // 1, 2, ... 9, then 0 for Exit
+        for (int n = 1; n <= 11; n++) {
+            int number = n % 11; // 1, 2, ... 10, then 0 for Exit
             String color = (number == tab) ? WHITE : BODY;
-            tabs = tabs + color + String.format(" %d %-12s", number, MENU[number]) + BODY;
-            if (n == 5 || n == 10) {
+            String text = " " + number + " " + MENU[number];
+            tabs = tabs + color + text + " ".repeat(TAB_WIDTH[(n - 1) % 6] - text.length()) + BODY;
+            if (n == 6 || n == 11) { // six tabs in the first row, five in the second
                 line(BODY, tabs);
                 tabs = "";
             }

@@ -63,6 +63,12 @@ public class Bookstore implements Serializable {
         save();
     }
 
+    // Removes a product and saves. Its old receipts stay, because a Sale keeps its own title and total.
+    public void delete(Product p) {
+        products.remove(p);
+        save();
+    }
+
     // Members get 5% off. The total is rounded to 2 decimal places.
     public double total(Product p, int quantity, boolean member) {
         if (quantity < 1 || quantity > p.getStock())
@@ -89,12 +95,12 @@ public class Bookstore implements Serializable {
         return sales.get(number - 1);
     }
 
-    // Marks the receipt refunded and puts the units back in stock.
+    // Marks the receipt refunded and puts the units back in stock (if the product was not deleted).
     public void refund(Sale sale) {
         if (sale.refunded) throw new RuntimeException("Receipt #" + sale.id + " was already refunded.");
         sale.refunded = true;
-        Product p = get(sale.productId);
-        p.setStock(p.getStock() + sale.quantity);
+        Product p = find(sale.productId); // null if the product was deleted
+        if (p != null) p.setStock(p.getStock() + sale.quantity);
         save();
     }
 

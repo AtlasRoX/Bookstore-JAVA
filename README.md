@@ -2,7 +2,7 @@
 
 A Java console application for a small bookstore, with a colorful full-screen terminal interface. The code is short (4 files) and uses simple syntax, and it demonstrates every core **Object-Oriented Programming (OOP)** concept from the course inside real features.
 
-**Project report (PDF, 18 pages):** [docs/Bookstore-Project-Report.pdf](docs/Bookstore-Project-Report.pdf) — Objective, Introduction, Methodology (tools, design diagrams, and all the important code with explanations, including the 11 OOP concepts), Discussion and Conclusion (screens of every feature, how each objective was met, problems solved, limitations), and References.
+**Project report (PDF, 19 pages):** [docs/Bookstore-Project-Report.pdf](docs/Bookstore-Project-Report.pdf) — Objective, Introduction, Methodology (tools, design diagrams, and all the important code with explanations, including the 11 OOP concepts), Discussion and Conclusion (screens of every feature, how each objective was met, problems solved, limitations), and References.
 
 **Presentation (Google Slides, 21 slides):** [View the presentation](https://docs.google.com/presentation/d/1if5fkjqZGf6V8-vpenAkUtjIuvOIZxUUxsQWVOg3HL8/edit?usp=sharing) — why this project, the features on real screens, how it works, all 11 OOP concepts in the code, tools and next steps.
 
@@ -34,6 +34,7 @@ A Java console application for a small bookstore, with a colorful full-screen te
 | `7` | Refund | Refund a whole receipt once; the stock goes back |
 | `8` | Sales | History of all receipts; refunded ones are yellow |
 | `9` | Report | Income after refunds, units sold, low stock, products added this session, stock value |
+| `10` | Delete | Remove a product after a yes/no question; its old receipts are kept |
 | `0` | Exit | Close the program (everything is already saved) |
 
 If an answer is wrong (unknown ID, too little cash, a letter instead of a number…), the program says why in red and asks that question again. Type `cancel` at any question to stop the current task without changing anything.
@@ -60,14 +61,14 @@ java Main
 ```
 Bookstore-JAVA/
 ├── Product.java      126 lines  Item, Trackable, Promotable (interfaces), abstract Product, Book, Stationery
-├── Bookstore.java    139 lines  shop rules (add, restock, sell, refund, search), saving and loading; class Sale
-├── BookstoreUI.java  222 lines  everything on screen: colors, menu tabs, tables, receipt, questions
-├── Main.java         148 lines  start-up, menu loop, one method per task
+├── Bookstore.java    145 lines  shop rules (add, restock, delete, sell, refund, search), saving and loading; class Sale
+├── BookstoreUI.java  224 lines  everything on screen: colors, menu tabs, tables, receipt, questions
+├── Main.java         163 lines  start-up, menu loop, one method per task
 ├── run.bat            10 lines  compiles and opens the program in an 80 × 24 window
 └── docs/                        project report (PDF) and screenshots
 ```
 
-**Size:** 635 lines of Java in total — 491 lines of code, 71 one-line comments (plus 35 short comments at the end of a line) and 73 blank lines.
+**Size:** 658 lines of Java in total — 510 lines of code, 73 one-line comments (plus 38 short comments at the end of a line) and 75 blank lines.
 
 **How the files work together:** `BookstoreUI` shows a screen and reads the answer → `Main` decides which task runs → `Bookstore` checks the rules, changes the data and saves it → `Product` / `Sale` are the data → `BookstoreUI` shows the result.
 
@@ -102,6 +103,8 @@ Every concept is used by a real feature. The [report](docs/Bookstore-Project-Rep
 | ![Add product](docs/screenshots/14-add-form-validation.png) | ![Restock](docs/screenshots/05-restock-form.png) |
 | **Sales history (refunded in yellow)** | **Report** |
 | ![Sales](docs/screenshots/11-sales.png) | ![Report](docs/screenshots/16-report.png) |
+| **Delete — asks before deleting** | **Deleted; old receipts are kept** |
+| ![Delete](docs/screenshots/18-delete-confirm.png) | ![Deleted](docs/screenshots/19-delete-result.png) |
 
 ---
 
@@ -113,6 +116,6 @@ Every change is saved straight away to `bookstore.dat` using Java object seriali
 
 ## Testing
 
-- **30 automated test cases** (add, validation, search, restock, price, sell, cancel, refund, report, menu, storage) — **30 passed**.
+- **37 automated test cases** (add, validation, search, restock, price, sell, cancel, refund, report, menu, delete, storage) — **37 passed**.
 - **50 random-input sessions** (random menu choices and answers) — **0 crashes, 0 broken data files**.
 - Real-window testing in an 80 × 24 Windows Terminal; every screenshot comes from these runs.
