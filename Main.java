@@ -29,6 +29,7 @@ public class Main {
                     case "7": ui.newScreen(7); refund(); break;
                     case "8": ui.newScreen(8); ui.showSales(store.getSales()); break;
                     case "9": ui.newScreen(9); ui.showReport(store); break;
+                    case "10": ui.newScreen(10); deleteProduct(); break;
                     case "0": ui.goodbye(); return;
                     default: ui.error("Please choose a number from the menu.");
                 }
@@ -143,6 +144,20 @@ public class Main {
         store.refund(sale);
         ui.newScreen(7);
         ui.showReceipt(sale);
-        ui.message(String.format("Refunded. Give back %.2f BDT. Stock returned.", sale.total));
+        String stock = (store.find(sale.productId) != null) ? "Stock returned." : "No stock returned (product deleted).";
+        ui.message(String.format("Refunded. Give back %.2f BDT. %s", sale.total, stock));
+    }
+
+    // 10 Delete: removes a product after asking to be sure. Old receipts are kept.
+    static void deleteProduct() {
+        ui.showProducts(store.getProducts());
+        Product p = askProduct();
+        ui.showProduct(p);
+        if (!ui.askYes("Delete this product")) {
+            ui.message("Not deleted. Nothing changed.");
+            return;
+        }
+        store.delete(p);
+        showResult(10, "Deleted \"" + p.getTitle() + "\". Its old receipts are kept.");
     }
 }
